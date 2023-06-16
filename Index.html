@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Color Catcher Game</title>
+    <style>
+      body {
+        background-color: #f2f2f2;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+      }
+
+      #game-container {
+        position: relative;
+        width: 400px;
+        height: 500px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      #basket {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 80px;
+        background-color: #3498db;
+        border-radius: 50%;
+      }
+
+      .ball {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .red {
+        background-color: #e74c3c;
+      }
+
+      .blue {
+        background-color: #3498db;
+      }
+
+      .green {
+        background-color: #2ecc71;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-container">
+      <div id="basket"></div>
+    </div>
+
+    <script>
+      // Game logic
+      const gameContainer = document.getElementById("game-container");
+      const basket = document.getElementById("basket");
+      let score = 0;
+
+      function createBall() {
+        const colors = ["red", "blue", "green"];
+        const ball = document.createElement("div");
+        ball.classList.add("ball");
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        ball.classList.add(randomColor);
+        ball.style.top = "0";
+        ball.style.left = Math.random() * (gameContainer.offsetWidth - 40) + "px";
+        gameContainer.appendChild(ball);
+        moveBall(ball);
+      }
+
+      function moveBall(ball) {
+        const animationDuration = 3000; // 3 seconds
+        const startPosition = parseInt(ball.style.top);
+        const endPosition = gameContainer.offsetHeight - 40;
+        const startTime = Date.now();
+
+        function updateBallPosition() {
+          const elapsedTime = Date.now() - startTime;
+          const progress = elapsedTime / animationDuration;
+          const newPosition = startPosition + progress * (endPosition - startPosition);
+          ball.style.top = newPosition + "px";
+
+          if (newPosition < endPosition) {
+            requestAnimationFrame(updateBallPosition);
+          } else {
+            checkCollision(ball);
+          }
+        }
+
+        requestAnimationFrame(updateBallPosition);
+      }
+
+      function checkCollision(ball) {
+        const basketRect = basket.getBoundingClientRect();
+        const ballRect = ball.getBoundingClientRect();
+
+        if (
+          ballRect.top <= basketRect.bottom &&
+          ballRect.right >= basketRect.left &&
+          ballRect.left <= basketRect.right
+        ) {
+          ball.remove();
+          score++;
+          updateScore();
+        } else if (ballRect.top > gameContainer.offsetHeight) {
+          ball.remove();
+          endGame();
+        }
+      }
+
+      function updateScore() {
+        document.title = "Score: " + score;
+      }
+
+      function endGame() {
+        gameContainer.removeEventListener("mousemove", moveBasket);
+        alert("Game Over! Your score is: " + score);
+        location.reload();
+      }
+
+      function moveBasket(event) {
+        const gameContainerRect = gameContainer.getBoundingClientRect();
+        const x = event.clientX - gameContainerRect.left;
+        const basketX = x - basket.offsetWidth / 2;
+        basket.style.left = Math.max(0, Math.min(gameContainer.offsetWidth - basket.offsetWidth, basketX)) + "px";
+      }
+
+      gameContainer.addEventListener("mousemove", moveBasket);
+      setInterval(createBall, 1500);
+    </script>
+  </body>
+</html>
