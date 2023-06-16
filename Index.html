@@ -8,6 +8,7 @@
         margin: 0;
         padding: 0;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         height: 100vh;
@@ -54,18 +55,55 @@
       .green {
         background-color: #2ecc71;
       }
+
+      #score-card {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-size: 18px;
+        border-radius: 7px;
+      }
+
+      #game-over {
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      #final-score {
+        text-align: center;
+        font-size: 18px;
+        color: #666;
+      }
     </style>
   </head>
   <body>
     <div id="game-container">
       <div id="basket"></div>
     </div>
+    <div id="score-card">
+      <span id="score">Score: 0 </span>
+      <span id="instructions">Move the basket using your mouse to catch the falling balls.</span>
+    </div>
+    <div id="game-over"></div>
+    <div id="final-score"></div>
 
     <script>
       // Game logic
       const gameContainer = document.getElementById("game-container");
       const basket = document.getElementById("basket");
+      const scoreDisplay = document.getElementById("score");
+      const instructionsDisplay = document.getElementById("instructions");
+      const gameOverDisplay = document.getElementById("game-over");
+      const finalScoreDisplay = document.getElementById("final-score");
       let score = 0;
+      let gameEnded = false;
 
       function createBall() {
         const colors = ["red", "blue", "green"];
@@ -86,6 +124,8 @@
         const startTime = Date.now();
 
         function updateBallPosition() {
+          if (gameEnded) return;
+
           const elapsedTime = Date.now() - startTime;
           const progress = elapsedTime / animationDuration;
           const newPosition = startPosition + progress * (endPosition - startPosition);
@@ -102,6 +142,8 @@
       }
 
       function checkCollision(ball) {
+        if (gameEnded) return;
+
         const basketRect = basket.getBoundingClientRect();
         const ballRect = ball.getBoundingClientRect();
 
@@ -120,13 +162,14 @@
       }
 
       function updateScore() {
-        document.title = "Score: " + score;
+        scoreDisplay.textContent = "Score: " + score;
       }
 
       function endGame() {
+        gameEnded = true;
         gameContainer.removeEventListener("mousemove", moveBasket);
-        alert("Game Over! Your score is: " + score);
-        location.reload();
+        gameOverDisplay.textContent = "Game Over!";
+        finalScoreDisplay.textContent = "Final Score: " + score;
       }
 
       function moveBasket(event) {
